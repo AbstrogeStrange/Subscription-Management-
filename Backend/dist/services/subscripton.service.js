@@ -5,6 +5,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.subscriptionService = void 0;
 const prisma_1 = __importDefault(require("../utils/prisma"));
+const DEFAULT_SUBSCRIPTION_CATEGORIES = [
+    "Entertainment",
+    "Productivity",
+    "Cloud & Storage",
+    "Education",
+    "Health & Fitness",
+    "Shopping & Lifestyle",
+    "Finance & Utilities",
+    "Internet & Telecom",
+    "Other",
+];
 exports.subscriptionService = {
     // Add new subscription
     async addSubscription(userId, data) {
@@ -247,9 +258,10 @@ exports.subscriptionService = {
             select: { category: true },
             distinct: ["category"],
         });
-        return subscriptions
+        const userCategories = subscriptions
             .map((sub) => sub.category)
             .filter((cat) => cat !== null);
+        return [...new Set([...DEFAULT_SUBSCRIPTION_CATEGORIES, ...userCategories])];
     },
 };
 //# sourceMappingURL=subscripton.service.js.map

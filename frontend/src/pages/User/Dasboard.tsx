@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   CalendarCheck,
@@ -14,108 +14,103 @@ import QuickActions from '../../components/Dashboard/QuickActions';
 import SpendingChart from '../../components/Dashboard/SpendingChart';
 import UpcomingRenewals from '../../components/Dashboard/UpcomingRenewals';
 import { useNavigate } from 'react-router-dom';
+import { dashboardApi } from '../../api/api';
+import { toast } from 'sonner';
+
+interface DashboardStats {
+  activeSubscriptions: number;
+  monthlySpending: number;
+  yearlySpending: number;
+  nextRenewal: {
+    name: string;
+    date: string;
+    daysLeft: number;
+  } | null;
+  plan: string;
+}
+
+interface DashboardSubscription {
+  id: string;
+  name: string;
+  category?: string | null;
+  amount: number | string;
+  billingCycle: string;
+  nextBillingDate: string;
+}
+
+interface SpendingPoint {
+  month: string;
+  amount: number;
+}
+
+interface Renewal {
+  id: string;
+  name: string;
+  amount: number;
+  daysLeft: number;
+  nextBillingDate: string;
+}
+
+const accentByCategory: Record<string, string> = {
+  Entertainment: '#E50914',
+  Productivity: '#10A37F',
+  'Cloud & Storage': '#3B82F6',
+  Education: '#F59E0B',
+  'Health & Fitness': '#22C55E',
+  'Shopping & Lifestyle': '#EC4899',
+  'Finance & Utilities': '#14B8A6',
+  'Internet & Telecom': '#6366F1',
+  Other: '#A855F7',
+};
+
+const getColorForCategory = (category?: string | null) =>
+  accentByCategory[category || 'Other'] || '#A855F7';
+
+const getIconLabel = (name: string) => {
+  const compact = name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  return compact || name.slice(0, 2).toUpperCase();
+};
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [subscriptions, setSubscriptions] = useState<DashboardSubscription[]>([]);
+  const [spendingData, setSpendingData] = useState<SpendingPoint[]>([]);
+  const [upcomingRenewals, setUpcomingRenewals] = useState<Renewal[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const stats = [
-    {
-      title: 'Active Subscriptions',
-      value: 5,
-      change: '+2 this month',
-      changeType: 'positive' as const,
-      icon: <CreditCard size={22} weight="bold" />,
-      gradient: 'from-sky-500/20 via-indigo-500/10 to-transparent',
-    },
-    {
-      title: 'Monthly Spending',
-      value: 'Rs 2,450',
-      change: '-12%',
-      changeType: 'positive' as const,
-      icon: <Wallet size={22} weight="bold" />,
-      gradient: 'from-emerald-500/16 via-teal-400/8 to-transparent',
-    },
-    {
-      title: 'Yearly Total',
-      value: 'Rs 29,400',
-      change: '+5%',
-      changeType: 'negative' as const,
-      icon: <TrendUp size={22} weight="bold" />,
-      gradient: 'from-violet-500/18 via-fuchsia-500/10 to-transparent',
-    },
-    {
-      title: 'Next Renewal',
-      value: '3 days',
-      change: 'Netflix',
-      changeType: 'neutral' as const,
-      icon: <CalendarCheck size={22} weight="bold" />,
-      gradient: 'from-violet-500/18 via-fuchsia-500/10 to-transparent',
-    },
-  ];
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        setLoading(true);
+        const [statsRes, subscriptionsRes, trendRes, renewalsRes] = await Promise.all([
+          dashboardApi.getDashboardStats(),
+          dashboardApi.getSubscriptions(0, 5, true),
+          dashboardApi.getMonthlySpendingTrend(6),
+          dashboardApi.getUpcomingRenewals(30),
+        ]);
 
-  const subscriptions = [
-    {
-      name: 'Netflix',
-      category: 'Entertainment',
-      amount: 649,
-      billingCycle: 'Monthly',
-      nextBillingDate: 'Dec 15, 2024',
-      icon: <span className="text-xl font-black tracking-tight text-[#E50914]">N</span>,
-      color: '#E50914',
-    },
-    {
-      name: 'Spotify',
-      category: 'Music',
-      amount: 119,
-      billingCycle: 'Monthly',
-      nextBillingDate: 'Dec 20, 2024',
-      icon: <span className="text-lg font-black tracking-tight text-[#1DB954]">S</span>,
-      color: '#1DB954',
-    },
-    {
-      name: 'ChatGPT Plus',
-      category: 'Productivity',
-      amount: 1650,
-      billingCycle: 'Monthly',
-      nextBillingDate: 'Dec 25, 2024',
-      icon: <span className="text-sm font-black tracking-tight text-[#10A37F]">GPT</span>,
-      color: '#10A37F',
-    },
-    {
-      name: 'YouTube Premium',
-      category: 'Entertainment',
-      amount: 139,
-      billingCycle: 'Monthly',
-      nextBillingDate: 'Jan 1, 2025',
-      icon: <span className="text-sm font-black tracking-tight text-[#FF0000]">YT</span>,
-      color: '#FF0000',
-    },
-    {
-      name: 'iCloud+',
-      category: 'Storage',
-      amount: 75,
-      billingCycle: 'Monthly',
-      nextBillingDate: 'Jan 5, 2025',
-      icon: <span className="text-sm font-black tracking-tight text-[#3B82F6]">iC</span>,
-      color: '#3B82F6',
-    },
-  ];
+        setStats(statsRes.data?.data || null);
+        setSubscriptions(subscriptionsRes.data?.data || []);
+        setSpendingData(trendRes.data?.data || []);
+        setUpcomingRenewals(renewalsRes.data?.data || []);
+      } catch (error) {
+        console.error('Dashboard load error:', error);
+        toast.error('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const spendingData = [
-    { month: 'Jul', amount: 2100 },
-    { month: 'Aug', amount: 2350 },
-    { month: 'Sep', amount: 2200 },
-    { month: 'Oct', amount: 2800 },
-    { month: 'Nov', amount: 2450 },
-    { month: 'Dec', amount: 2632 },
-  ];
-
-  const upcomingRenewals = [
-    { id: '1', name: 'Netflix', icon: '🎬', amount: 649, daysLeft: 3, color: '#E50914' },
-    { id: '2', name: 'Spotify', icon: '🎵', amount: 119, daysLeft: 8, color: '#1DB954' },
-    { id: '3', name: 'ChatGPT Plus', icon: '🤖', amount: 1650, daysLeft: 13, color: '#10A37F' },
-  ];
+    loadDashboard();
+  }, []);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -123,6 +118,41 @@ const Dashboard: React.FC = () => {
     if (hour < 18) return 'Good afternoon';
     return 'Good evening';
   };
+
+  const statCards = [
+    {
+      title: 'Active Subscriptions',
+      value: stats?.activeSubscriptions ?? 0,
+      change: subscriptions.length > 0 ? `${subscriptions.length} shown` : undefined,
+      changeType: 'positive' as const,
+      icon: <CreditCard size={22} weight="bold" />,
+      gradient: 'from-sky-500/20 via-indigo-500/10 to-transparent',
+    },
+    {
+      title: 'Monthly Spending',
+      value: `Rs ${(stats?.monthlySpending ?? 0).toLocaleString('en-IN')}`,
+      change: 'Live data',
+      changeType: 'positive' as const,
+      icon: <Wallet size={22} weight="bold" />,
+      gradient: 'from-emerald-500/16 via-teal-400/8 to-transparent',
+    },
+    {
+      title: 'Yearly Total',
+      value: `Rs ${(stats?.yearlySpending ?? 0).toLocaleString('en-IN')}`,
+      change: 'Projected',
+      changeType: 'neutral' as const,
+      icon: <TrendUp size={22} weight="bold" />,
+      gradient: 'from-violet-500/18 via-fuchsia-500/10 to-transparent',
+    },
+    {
+      title: 'Next Renewal',
+      value: stats?.nextRenewal ? `${Math.max(stats.nextRenewal.daysLeft, 0)} days` : 'No dues',
+      change: stats?.nextRenewal?.name || 'All clear',
+      changeType: stats?.nextRenewal && stats.nextRenewal.daysLeft <= 3 ? 'negative' : 'neutral' as const,
+      icon: <CalendarCheck size={22} weight="bold" />,
+      gradient: 'from-violet-500/18 via-fuchsia-500/10 to-transparent',
+    },
+  ];
 
   return (
     <div className="space-y-6 text-white">
@@ -142,7 +172,9 @@ const Dashboard: React.FC = () => {
               {getGreeting()}, {user?.name?.split(' ')[0] || 'User'}.
             </h1>
             <p className="mt-3 max-w-xl text-base leading-7 text-white/52">
-              Your subscriptions are organized into a cleaner, cinematic control center with floating glass widgets and proactive billing insight.
+              {loading
+                ? 'Syncing your latest subscriptions and billing activity.'
+                : 'Your subscriptions are now powered by live SQLite-backed data across the dashboard and subscription workspace.'}
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -163,9 +195,13 @@ const Dashboard: React.FC = () => {
 
           <div className="grid gap-3 sm:grid-cols-3 xl:w-[360px] xl:grid-cols-1">
             {[
-              { label: 'Tracked services', value: '24', tint: 'from-fuchsia-500/25 to-transparent' },
-              { label: 'Potential savings', value: 'Rs 450', tint: 'from-sky-500/20 to-transparent' },
-              { label: 'Renewals this week', value: '03', tint: 'from-emerald-500/20 to-transparent' },
+              { label: 'Tracked services', value: String(stats?.activeSubscriptions ?? 0), tint: 'from-fuchsia-500/25 to-transparent' },
+              { label: 'Monthly spend', value: `Rs ${(stats?.monthlySpending ?? 0).toLocaleString('en-IN')}`, tint: 'from-sky-500/20 to-transparent' },
+              {
+                label: 'Renewals this month',
+                value: String(upcomingRenewals.length).padStart(2, '0'),
+                tint: 'from-emerald-500/20 to-transparent',
+              },
             ].map((item) => (
               <div
                 key={item.label}
@@ -199,7 +235,9 @@ const Dashboard: React.FC = () => {
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/34">AI insight</p>
               <p className="mt-1 text-sm text-white/68">
-                You could save Rs 450 each month by moving Netflix and Spotify to annual plans.
+                {stats?.monthlySpending
+                  ? `Your current live monthly spend is Rs ${stats.monthlySpending.toLocaleString('en-IN')}. Add more subscriptions to keep this view up to date.`
+                  : 'No active subscriptions yet. Add one from the subscriptions page and it will appear here automatically.'}
               </p>
             </div>
           </div>
@@ -213,14 +251,14 @@ const Dashboard: React.FC = () => {
       </motion.div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map((stat, index) => (
+        {statCards.map((stat, index) => (
           <StatsCard key={stat.title} {...stat} index={index} />
         ))}
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.45fr_0.95fr]">
         <div className="space-y-6">
-          <SpendingChart data={spendingData} />
+          <SpendingChart data={spendingData.length > 0 ? spendingData : [{ month: 'Now', amount: 0 }]} />
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -240,16 +278,46 @@ const Dashboard: React.FC = () => {
                 View all
               </button>
             </div>
+
             <div className="grid grid-cols-1 gap-3">
-              {subscriptions.map((sub, index) => (
-                <SubscriptionCard key={sub.name} {...sub} index={index} />
-              ))}
+              {subscriptions.length > 0 ? (
+                subscriptions.map((sub, index) => (
+                  <SubscriptionCard
+                    key={sub.id}
+                    name={sub.name}
+                    category={sub.category || 'Other'}
+                    amount={Number(sub.amount)}
+                    billingCycle={sub.billingCycle}
+                    nextBillingDate={new Date(sub.nextBillingDate).toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                    icon={<span className="text-sm font-black tracking-tight">{getIconLabel(sub.name)}</span>}
+                    color={getColorForCategory(sub.category)}
+                    index={index}
+                  />
+                ))
+              ) : (
+                <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-5 text-sm text-white/58">
+                  No subscriptions yet. Add your first one and it will appear here.
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
 
         <div className="space-y-6">
-          <UpcomingRenewals renewals={upcomingRenewals} />
+          <UpcomingRenewals
+            renewals={upcomingRenewals.map((renewal) => ({
+              id: renewal.id,
+              name: renewal.name,
+              icon: getIconLabel(renewal.name),
+              amount: Number(renewal.amount),
+              daysLeft: renewal.daysLeft,
+              color: getColorForCategory('Other'),
+            }))}
+          />
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -263,19 +331,19 @@ const Dashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/34">Current plan</p>
-                <h3 className="mt-1 text-xl font-semibold text-white capitalize">{user?.plan || 'Free'}</h3>
+                <h3 className="mt-1 text-xl font-semibold text-white capitalize">{stats?.plan || user?.plan || 'free'}</h3>
               </div>
             </div>
 
             <p className="mt-5 text-sm leading-7 text-white/52">
-              {user?.plan === 'premium'
+              {stats?.plan === 'premium'
                 ? 'You have unlimited subscriptions and access to all premium analytics modules.'
-                : user?.plan === 'basic'
+                : stats?.plan === 'basic'
                 ? 'Your basic workspace is optimized for up to 5 active subscriptions.'
                 : 'Upgrade to unlock more tracked subscriptions and richer billing intelligence.'}
             </p>
 
-            {user?.plan !== 'premium' ? (
+            {(stats?.plan || user?.plan) !== 'premium' ? (
               <button
                 onClick={() => navigate('/payments')}
                 className="mt-6 w-full rounded-2xl bg-[linear-gradient(135deg,#d56dff_0%,#7a38ff_55%,#4d56ff_100%)] py-3.5 text-sm font-semibold text-white shadow-[0_18px_44px_rgba(117,74,255,0.34)] transition-all hover:shadow-[0_22px_54px_rgba(117,74,255,0.42)]"

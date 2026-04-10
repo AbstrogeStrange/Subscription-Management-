@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Sparkle, TrendUp, Calendar } from '@phosphor-icons/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { Subscription } from '../../types';
+import axios from 'axios';
 
 interface DaysUntilBilling {
   [key: string]: number;
@@ -36,6 +37,20 @@ const itemVariants = {
     },
   },
 };
+
+const DEFAULT_CATEGORIES = [
+  'Entertainment',
+  'Productivity',
+  'Cloud & Storage',
+  'Education',
+  'Health & Fitness',
+  'Shopping & Lifestyle',
+  'Finance & Utilities',
+  'Internet & Telecom',
+  'Other',
+];
+
+const normalizeAmount = (amount: number | string) => Number(amount) || 0;
 
 const SubscriptionsPage: React.FC = () => {
   const location = useLocation();
@@ -87,7 +102,9 @@ const SubscriptionsPage: React.FC = () => {
       ]);
 
       setSubscriptions(subsRes.data.data || []);
-      setCategories(categoriesRes.data.data || []);
+      setCategories(
+        Array.from(new Set([...(categoriesRes.data.data || []), ...DEFAULT_CATEGORIES]))
+      );
 
       const daysMap: DaysUntilBilling = {};
       for (const sub of subsRes.data.data || []) {
@@ -111,12 +128,49 @@ const SubscriptionsPage: React.FC = () => {
 
   const handleAddSubscription = async (data: any) => {
     try {
-      await subscriptionApi.addSubscription(data);
+      const response = await subscriptionApi.addSubscription(data);
+      const createdSubscription = response.data?.data as Subscription | undefined;
+
+      if (createdSubscription) {
+        setSubscriptions((prev) => {
+          const next = [createdSubscription, ...prev.filter((sub) => sub.id !== createdSubscription.id)];
+
+          return next.sort(
+            (a, b) =>
+              new Date(a.nextBillingDate).getTime() - new Date(b.nextBillingDate).getTime()
+          );
+        });
+
+        setCategories((prev) =>
+          createdSubscription.category && !prev.includes(createdSubscription.category)
+            ? [...prev, createdSubscription.category]
+            : prev
+        );
+
+        setDaysUntilBilling((prev) => {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const nextBilling = new Date(createdSubscription.nextBillingDate);
+          nextBilling.setHours(0, 0, 0, 0);
+
+          return {
+            ...prev,
+            [createdSubscription.id]: Math.ceil(
+              (nextBilling.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+            ),
+          };
+        });
+      }
+
       toast.success('Subscription added successfully');
       fetchData();
     } catch (error) {
       console.error('Error adding subscription:', error);
-      toast.error('Failed to add subscription');
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.message || 'Failed to add subscription'
+        : 'Failed to add subscription';
+      toast.error(message);
+      throw error;
     }
   };
 
@@ -164,9 +218,10 @@ const SubscriptionsPage: React.FC = () => {
   };
 
   const totalMonthlySpending = subscriptions.reduce((sum, sub) => {
-    if (sub.billingCycle === 'monthly') return sum + sub.amount;
-    if (sub.billingCycle === 'yearly') return sum + sub.amount / 12;
-    if (sub.billingCycle === 'weekly') return sum + sub.amount * 4.33;
+    const amount = normalizeAmount(sub.amount);
+    if (sub.billingCycle === 'monthly') return sum + amount;
+    if (sub.billingCycle === 'yearly') return sum + amount / 12;
+    if (sub.billingCycle === 'weekly') return sum + amount * 4.33;
     return sum;
   }, 0);
 
@@ -174,6 +229,33 @@ const SubscriptionsPage: React.FC = () => {
   const nextRenewal = subscriptions.length > 0
     ? Math.min(...subscriptions.map((s) => daysUntilBilling[s.id] || Infinity))
     : 0;
+  const categorySummaryMap = subscriptions.reduce((acc, sub) => {
+    const categoryName = sub.category?.trim() || 'Other';
+
+    if (!acc[categoryName]) {
+      acc[categoryName] = {
+        name: categoryName,
+        count: 0,
+        monthlyTotal: 0,
+      };
+    }
+
+    acc[categoryName].count += 1;
+
+    const amount = normalizeAmount(sub.amount);
+
+    if (sub.billingCycle === 'monthly') acc[categoryName].monthlyTotal += amount;
+    else if (sub.billingCycle === 'yearly') acc[categoryName].monthlyTotal += amount / 12;
+    else if (sub.billingCycle === 'weekly') acc[categoryName].monthlyTotal += amount * 4.33;
+
+    return acc;
+  }, {} as Record<string, { name: string; count: number; monthlyTotal: number }>);
+
+  const categorySummary = categories.map((categoryName) => ({
+    name: categoryName,
+    count: categorySummaryMap[categoryName]?.count || 0,
+    monthlyTotal: categorySummaryMap[categoryName]?.monthlyTotal || 0,
+  }));
 
   return (
     <div className="space-y-6">
@@ -323,6 +405,107 @@ const SubscriptionsPage: React.FC = () => {
               {nextRenewal} days
             </p>
           </motion.div>
+        </motion.div>
+      )}
+
+      {!loading && categories.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="relative overflow-hidden rounded-[24px] border"
+          style={{
+            borderColor: 'rgba(255,255,255,0.08)',
+            backgroundColor: 'rgba(12, 7, 24, 0.72)',
+          }}
+        >
+          <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_18%_18%,rgba(153,92,255,0.22),transparent_28%),radial-gradient(circle_at_86%_10%,rgba(199,144,255,0.18),transparent_26%),linear-gradient(180deg,#120429_0%,#090112_48%,#04010a_100%)]" />
+          <div className="absolute inset-0 z-0 bg-black/20" />
+
+          <div className="relative z-10 p-5 lg:p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/40">
+                  Categories
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-white">
+                  Browse by category
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm text-white/58">
+                  Jump into a category to narrow your subscriptions and compare where your monthly spend is concentrated.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-white/78">
+                {categories.length} categories
+              </div>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <motion.button
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+                whileHover={{ y: -3, scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => handleFilterChange('category', '')}
+                className="rounded-2xl border p-4 text-left transition-all"
+                style={{
+                  borderColor: !filters.category ? 'rgba(216, 180, 254, 0.42)' : 'rgba(255,255,255,0.08)',
+                  background: !filters.category
+                    ? 'linear-gradient(135deg, rgba(213,109,255,0.22), rgba(77,86,255,0.16))'
+                    : 'linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%)',
+                }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-white">All Categories</p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white/36">
+                      Show every subscription
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-violet-100">
+                    {subscriptions.length} total
+                  </span>
+                </div>
+              </motion.button>
+
+              {categorySummary.map((category, index) => {
+                const isActiveCategory = filters.category === category.name;
+
+                return (
+                  <motion.button
+                    key={category.name}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: (index + 1) * 0.05 }}
+                    whileHover={{ y: -3, scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => handleFilterChange('category', isActiveCategory ? '' : category.name)}
+                    className="rounded-2xl border p-4 text-left transition-all"
+                    style={{
+                      borderColor: isActiveCategory ? 'rgba(216, 180, 254, 0.42)' : 'rgba(255,255,255,0.08)',
+                      background: isActiveCategory
+                        ? 'linear-gradient(135deg, rgba(213,109,255,0.22), rgba(77,86,255,0.16))'
+                        : 'linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%)',
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-white">{category.name}</p>
+                        <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white/36">
+                          {category.count} service{category.count === 1 ? '' : 's'}
+                        </p>
+                      </div>
+                      <span className="rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-violet-100">
+                        Rs {category.monthlyTotal.toFixed(0)}/mo
+                      </span>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
         </motion.div>
       )}
 

@@ -3,6 +3,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus } from '@phosphor-icons/react';
 import { useForm } from 'react-hook-form';
 
+const DEFAULT_CATEGORIES = [
+  'Entertainment',
+  'Productivity',
+  'Cloud & Storage',
+  'Education',
+  'Health & Fitness',
+  'Shopping & Lifestyle',
+  'Finance & Utilities',
+  'Internet & Telecom',
+  'Other',
+];
+
 interface SubscriptionFormData {
   name: string;
   category: string;
@@ -32,6 +44,8 @@ const AddSubscriptionModal: React.FC<AddSubscriptionModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isControlled = typeof open === 'boolean';
   const isOpen = isControlled ? open : internalOpen;
+  const categoryOptions = categories.length > 0 ? categories : DEFAULT_CATEGORIES;
+  const formId = 'add-subscription-form';
 
   const setModalOpen = (nextOpen: boolean) => {
     if (!isControlled) {
@@ -45,8 +59,6 @@ const AddSubscriptionModal: React.FC<AddSubscriptionModalProps> = ({
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
-    watch,
   } = useForm<SubscriptionFormData>({
     defaultValues: {
       name: '',
@@ -133,7 +145,7 @@ const AddSubscriptionModal: React.FC<AddSubscriptionModalProps> = ({
                 </div>
 
                 {/* Form - Scrollable */}
-                <form onSubmit={handleSubmit(onFormSubmit)} className="flex-1 overflow-y-auto p-5 space-y-3.5">
+                <form id={formId} onSubmit={handleSubmit(onFormSubmit)} className="flex-1 overflow-y-auto p-5 space-y-3.5">
                   {/* Name */}
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
@@ -172,9 +184,8 @@ const AddSubscriptionModal: React.FC<AddSubscriptionModalProps> = ({
                       Category
                     </label>
                     <select
+                      {...register('category')}
                       disabled={isSubmitting}
-                      onChange={(e) => setValue('category', e.target.value)}
-                      value={watch('category') || ''}
                       className="w-full px-3.5 py-2 rounded-lg border-2 font-medium text-sm transition-all"
                       style={{
                         backgroundColor: 'var(--color-muted)',
@@ -183,7 +194,7 @@ const AddSubscriptionModal: React.FC<AddSubscriptionModalProps> = ({
                       }}
                     >
                       <option value="">Select category</option>
-                      {categories.map((cat) => (
+                      {categoryOptions.map((cat) => (
                         <option key={cat} value={cat}>
                           {cat}
                         </option>
@@ -264,15 +275,20 @@ const AddSubscriptionModal: React.FC<AddSubscriptionModalProps> = ({
                     </label>
                     <input
                       type="date"
-                      {...register('nextBillingDate')}
+                      {...register('nextBillingDate', { required: 'Next billing date is required' })}
                       disabled={isSubmitting}
                       className="w-full px-3.5 py-2 rounded-lg border-2 font-medium text-sm transition-all"
                       style={{
                         backgroundColor: 'var(--color-muted)',
-                        borderColor: 'var(--color-border)',
+                        borderColor: errors.nextBillingDate ? 'var(--color-destructive)' : 'var(--color-border)',
                         color: 'var(--color-foreground)',
                       }}
                     />
+                    {errors.nextBillingDate && (
+                      <p className="text-xs font-medium" style={{ color: 'var(--color-destructive)' }}>
+                        {errors.nextBillingDate.message}
+                      </p>
+                    )}
                   </motion.div>
 
                   {/* Payment Method */}
@@ -346,7 +362,7 @@ const AddSubscriptionModal: React.FC<AddSubscriptionModalProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="submit"
-                    onClick={handleSubmit(onFormSubmit)}
+                    form={formId}
                     disabled={isSubmitting}
                     className="flex-1 px-4 py-2.5 rounded-lg font-bold text-sm transition-all"
                     style={{

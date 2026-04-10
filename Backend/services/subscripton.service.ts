@@ -1,6 +1,18 @@
 import prisma from "../utils/prisma";
 import type { SubscriptionInput, UpdateSubscriptionInput } from "../utils/validators";
 
+const DEFAULT_SUBSCRIPTION_CATEGORIES = [
+  "Entertainment",
+  "Productivity",
+  "Cloud & Storage",
+  "Education",
+  "Health & Fitness",
+  "Shopping & Lifestyle",
+  "Finance & Utilities",
+  "Internet & Telecom",
+  "Other",
+];
+
 export const subscriptionService = {
   // Add new subscription
   async addSubscription(userId: string, data: SubscriptionInput) {
@@ -315,8 +327,10 @@ export const subscriptionService = {
       distinct: ["category"],
     });
 
-    return subscriptions
+    const userCategories = subscriptions
       .map((sub) => sub.category)
       .filter((cat) => cat !== null) as string[];
+
+    return [...new Set([...DEFAULT_SUBSCRIPTION_CATEGORIES, ...userCategories])];
   },
 };

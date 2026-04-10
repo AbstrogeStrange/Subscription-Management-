@@ -4,6 +4,18 @@ import { X, ToggleRight, ToggleLeft } from '@phosphor-icons/react';
 import { useForm } from 'react-hook-form';
 import type { Subscription } from '../../types';
 
+const DEFAULT_CATEGORIES = [
+  'Entertainment',
+  'Productivity',
+  'Cloud & Storage',
+  'Education',
+  'Health & Fitness',
+  'Shopping & Lifestyle',
+  'Finance & Utilities',
+  'Internet & Telecom',
+  'Other',
+];
+
 interface EditSubscriptionFormData {
   name: string;
   category: string;
@@ -32,6 +44,8 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
   isLoading = false,
   categories,
 }) => {
+  const categoryOptions = categories.length > 0 ? categories : DEFAULT_CATEGORIES;
+
   const {
     register,
     handleSubmit,
@@ -177,20 +191,11 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
                         }}
                       >
                         <option value="">Select category</option>
-                        {categories && categories.length > 0 ? (
-                          categories.map((cat) => (
-                            <option key={cat} value={cat}>
-                              {cat}
-                            </option>
-                          ))
-                        ) : (
-                          <>
-                            <option value="Entertainment">Entertainment</option>
-                            <option value="Streaming">Streaming</option>
-                            <option value="Productivity">Productivity</option>
-                            <option value="Software">Software</option>
-                          </>
-                        )}
+                        {categoryOptions.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
                       </select>
                     </motion.div>
 

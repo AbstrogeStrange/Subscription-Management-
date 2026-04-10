@@ -2,12 +2,19 @@
 > backend@1.0.0 start
 > node dist/server.js
 
-[dotenv@17.2.3] injecting env (4) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.3] injecting env (4) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
 Server running on port 5000
-POST /api/auth/register [Object: null prototype] {}
-POST /api/auth/billing-address [Object: null prototype] {}
+GET /health [Object: null prototype] {}
+GET /api/dashboard/stats [Object: null prototype] {}
+GET /api/dashboard/subscriptions [Object: null prototype] { skip: '0', take: '5', isActive: 'true' }
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/dashboard/upcoming-renewals [Object: null prototype] { days: '30' }
 GET /api/subscriptions [Object: null prototype] {}
+GET /api/dashboard/subscriptions [Object: null prototype] { skip: '0', take: '5', isActive: 'true' }
+GET /api/dashboard/stats [Object: null prototype] {}
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
 GET /api/subscriptions [Object: null prototype] {}
+GET /api/dashboard/upcoming-renewals [Object: null prototype] { days: '30' }
 GET /api/subscriptions [Object: null prototype] {
   sortBy: 'nextBillingDate',
   sortOrder: 'asc'
@@ -18,94 +25,84 @@ GET /api/subscriptions [Object: null prototype] {
   sortOrder: 'asc'
 }
 GET /api/subscriptions/categories/list [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {
-  sortBy: 'nextBillingDate',
-  sortOrder: 'asc'
-}
-GET /api/subscriptions/categories/list [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {
-  sortBy: 'nextBillingDate',
-  sortOrder: 'asc'
-}
-GET /api/subscriptions/categories/list [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {
-  sortBy: 'nextBillingDate',
-  sortOrder: 'asc'
-}
-GET /api/subscriptions/categories/list [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {
-  sortBy: 'nextBillingDate',
-  sortOrder: 'asc'
-}
-GET /api/subscriptions/categories/list [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {
-  sortBy: 'nextBillingDate',
-  sortOrder: 'asc'
-}
-GET /api/subscriptions/categories/list [Object: null prototype] {}
-GET /api/subscriptions/categories/list [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {
-  sortBy: 'nextBillingDate',
-  sortOrder: 'asc'
-}
-GET /api/subscriptions [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {}
 GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
 GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
+GET /health [Object: null prototype] {}
+POST /api/subscriptions [Object: null prototype] {}
 GET /api/subscriptions [Object: null prototype] {}
+GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
 GET /api/subscriptions [Object: null prototype] {}
+GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
 GET /api/subscriptions [Object: null prototype] {}
+GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
 GET /api/subscriptions [Object: null prototype] {}
+GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
 GET /api/subscriptions [Object: null prototype] {}
-GET /api/dashboard/payments/summary [Object: null prototype] {}
-404 Not Found: GET /api/dashboard/payments/summary
-GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
-GET /api/dashboard/payments/summary [Object: null prototype] {}
-404 Not Found: GET /api/dashboard/payments/summary
-GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
+GET /api/dashboard/stats [Object: null prototype] {}
+GET /api/dashboard/subscriptions [Object: null prototype] { skip: '0', take: '5', isActive: 'true' }
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/dashboard/upcoming-renewals [Object: null prototype] { days: '30' }
 GET /api/subscriptions [Object: null prototype] {}
-GET /api/dashboard/payments/summary [Object: null prototype] {}
-404 Not Found: GET /api/dashboard/payments/summary
-GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
-GET /api/dashboard/payments/summary [Object: null prototype] {}
-404 Not Found: GET /api/dashboard/payments/summary
-GET /api/subscriptions [Object: null prototype] {}
-GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
-GET /api/subscriptions [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {}
-GET /api/dashboard/payments/summary [Object: null prototype] {}
-404 Not Found: GET /api/dashboard/payments/summary
-GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
-GET /api/dashboard/payments/summary [Object: null prototype] {}
-404 Not Found: GET /api/dashboard/payments/summary
-GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
-GET /api/dashboard/payments/summary [Object: null prototype] {}
-GET /favicon.ico [Object: null prototype] {}
-404 Not Found: GET /favicon.ico
+GET /api/dashboard/stats [Object: null prototype] {}
+GET /api/dashboard/subscriptions [Object: null prototype] { skip: '0', take: '5', isActive: 'true' }
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/dashboard/upcoming-renewals [Object: null prototype] { days: '30' }
+GET /api/subscriptions [Object: null prototype] {
+  sortBy: 'nextBillingDate',
+  sortOrder: 'asc'
+}
+GET /api/subscriptions/categories/list [Object: null prototype] {}
+GET /api/subscriptions [Object: null prototype] {
+  sortBy: 'nextBillingDate',
+  sortOrder: 'asc'
+}
+GET /api/subscriptions/categories/list [Object: null prototype] {}
+DELETE /api/subscriptions/cmnsrfh250003vrnkad7jbks2 [Object: null prototype] {}
+GET /api/subscriptions [Object: null prototype] {
+  sortBy: 'nextBillingDate',
+  sortOrder: 'asc'
+}
+GET /api/subscriptions/categories/list [Object: null prototype] {}
+GET /api/dashboard/stats [Object: null prototype] {}
+GET /api/dashboard/subscriptions [Object: null prototype] { skip: '0', take: '5', isActive: 'true' }
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/dashboard/upcoming-renewals [Object: null prototype] { days: '30' }
+GET /api/dashboard/stats [Object: null prototype] {}
+GET /api/dashboard/subscriptions [Object: null prototype] { skip: '0', take: '5', isActive: 'true' }
+GET /api/dashboard/upcoming-renewals [Object: null prototype] { days: '30' }
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/subscriptions [Object: null prototype] {
+  sortBy: 'nextBillingDate',
+  sortOrder: 'asc'
+}
+GET /api/subscriptions/categories/list [Object: null prototype] {}
+GET /api/subscriptions [Object: null prototype] {
+  sortBy: 'nextBillingDate',
+  sortOrder: 'asc'
+}
+GET /api/subscriptions/categories/list [Object: null prototype] {}
+DELETE /api/subscriptions/cmnsru6qp0001vrx4d0z7bm8q [Object: null prototype] {}
+GET /api/subscriptions [Object: null prototype] {
+  sortBy: 'nextBillingDate',
+  sortOrder: 'asc'
+}
+GET /api/subscriptions/categories/list [Object: null prototype] {}
+GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
+GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
 GET /api/subscriptions [Object: null prototype] {}
 GET /api/subscriptions [Object: null prototype] {}
 GET /api/chat/insights [Object: null prototype] {}
-404 Not Found: GET /api/chat/insights
 GET /api/chat/insights [Object: null prototype] {}
-404 Not Found: GET /api/chat/insights
-POST /api/chat/ask [Object: null prototype] {}
-404 Not Found: POST /api/chat/ask
-GET /api/subscriptions [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {}
 GET /api/subscriptions [Object: null prototype] {}
 GET /api/subscriptions [Object: null prototype] {}
 GET /api/dashboard/payments/summary [Object: null prototype] {}
-404 Not Found: GET /api/dashboard/payments/summary
+GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
 GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
 GET /api/dashboard/payments/summary [Object: null prototype] {}
-404 Not Found: GET /api/dashboard/payments/summary
-GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
 GET /api/subscriptions [Object: null prototype] {}
 GET /api/subscriptions [Object: null prototype] {}
 GET /api/chat/insights [Object: null prototype] {}
-404 Not Found: GET /api/chat/insights
 GET /api/chat/insights [Object: null prototype] {}
-404 Not Found: GET /api/chat/insights
 GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
 GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
 GET /api/subscriptions [Object: null prototype] {
@@ -118,50 +115,36 @@ GET /api/subscriptions [Object: null prototype] {
   sortOrder: 'asc'
 }
 GET /api/subscriptions/categories/list [Object: null prototype] {}
-GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
-GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {
-  sortBy: 'nextBillingDate',
-  sortOrder: 'asc'
-}
-GET /api/subscriptions/categories/list [Object: null prototype] {}
-GET /api/subscriptions/categories/list [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {
-  sortBy: 'nextBillingDate',
-  sortOrder: 'asc'
-}
-GET /api/subscriptions [Object: null prototype] {
-  sortBy: 'nextBillingDate',
-  sortOrder: 'asc'
-}
-GET /api/subscriptions/categories/list [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {
-  sortBy: 'nextBillingDate',
-  sortOrder: 'asc'
-}
-GET /api/subscriptions/categories/list [Object: null prototype] {}
-GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
-GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
-GET /api/chat/insights [Object: null prototype] {}
-404 Not Found: GET /api/chat/insights
-GET /api/chat/insights [Object: null prototype] {}
-404 Not Found: GET /api/chat/insights
+GET /api/dashboard/stats [Object: null prototype] {}
+GET /api/dashboard/subscriptions [Object: null prototype] { skip: '0', take: '5', isActive: 'true' }
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/dashboard/upcoming-renewals [Object: null prototype] { days: '30' }
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/dashboard/stats [Object: null prototype] {}
+GET /api/dashboard/upcoming-renewals [Object: null prototype] { days: '30' }
+GET /api/dashboard/subscriptions [Object: null prototype] { skip: '0', take: '5', isActive: 'true' }
 GET /api/subscriptions [Object: null prototype] {}
+GET /api/dashboard/stats [Object: null prototype] {}
+GET /api/dashboard/subscriptions [Object: null prototype] { skip: '0', take: '5', isActive: 'true' }
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/dashboard/upcoming-renewals [Object: null prototype] { days: '30' }
 GET /api/subscriptions [Object: null prototype] {}
-GET /api/dashboard/payments/summary [Object: null prototype] {}
-404 Not Found: GET /api/dashboard/payments/summary
-GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
-GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
-GET /api/dashboard/payments/summary [Object: null prototype] {}
-404 Not Found: GET /api/dashboard/payments/summary
-GET /api/dashboard/payments/summary [Object: null prototype] {}
-404 Not Found: GET /api/dashboard/payments/summary
-GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
-GET /api/dashboard/payments/summary [Object: null prototype] {}
-404 Not Found: GET /api/dashboard/payments/summary
-GET /api/dashboard/payments [Object: null prototype] { skip: '0', take: '20' }
-GET /api/subscriptions [Object: null prototype] {}
-GET /api/subscriptions [Object: null prototype] {}
+GET /api/dashboard/stats [Object: null prototype] {}
+GET /api/dashboard/subscriptions [Object: null prototype] { skip: '0', take: '5', isActive: 'true' }
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/dashboard/upcoming-renewals [Object: null prototype] { days: '30' }
+GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
+GET /api/dashboard/stats [Object: null prototype] {}
+GET /api/dashboard/subscriptions [Object: null prototype] { skip: '0', take: '5', isActive: 'true' }
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/dashboard/upcoming-renewals [Object: null prototype] { days: '30' }
+GET /api/dashboard/stats [Object: null prototype] {}
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/dashboard/upcoming-renewals [Object: null prototype] { days: '30' }
+GET /api/dashboard/subscriptions [Object: null prototype] { skip: '0', take: '5', isActive: 'true' }
 GET /api/subscriptions [Object: null prototype] {
   sortBy: 'nextBillingDate',
   sortOrder: 'asc'
@@ -172,3 +155,7 @@ GET /api/subscriptions [Object: null prototype] {
   sortOrder: 'asc'
 }
 GET /api/subscriptions/categories/list [Object: null prototype] {}
+GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/dashboard/spending-trend [Object: null prototype] { months: '6' }
+GET /api/subscriptions/analytics/dashboard [Object: null prototype] {}
