@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  phoneNumber   String
+  passwordHash  String
+  plan          String   @default("free") // 'free', 'basic', 'premium'
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  subscriptions    Subscription[]
+  payments         Payment[]
+  billingAddress   BillingAddress?
+}
+
+model BillingAddress {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  streetAddress    String
+  city             String
+  state            String
+  postalCode       String
+  country          String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Subscription {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  category        String?
+  amount          Decimal
+  billingCycle    String   // 'monthly', 'yearly', 'weekly', 'custom'
+  nextBillingDate DateTime
+  paymentMethod   String?  // 'UPI', 'Card', etc.
+  isActive        Boolean  @default(true)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Payment {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount            Decimal
+  planType          String   // 'free', 'basic', 'premium'
+  razorpayOrderId   String   @unique
+  razorpayPaymentId String?  @unique
+  status            String   // 'created', 'success', 'failed'
+  paymentDate       DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+}
